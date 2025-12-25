@@ -89,7 +89,7 @@ function Home() {
             <TechBadge name="TanStack Start" href="https://tanstack.com/start" icon={FlashIcon} />
             <TechBadge name="React 19" href="https://react.dev" icon={SourceCodeIcon} />
             <TechBadge name="Bun" href="https://bun.sh" icon={Rocket01Icon} />
-            <TechBadge name="Hono" href="https://hono.dev" icon={Server01Icon} />
+            <TechBadge name="Hono" href="https://hono.dev" icon={ServerIcon} />
             <TechBadge name="Drizzle" href="https://orm.drizzle.team" icon={Database01Icon} />
             <TechBadge name="Tailwind CSS" href="https://tailwindcss.com" />
           </div>
@@ -131,7 +131,7 @@ function Home() {
               description="Server-side rendered React 19 with TanStack Router, TanStack Query, and Tailwind CSS 4. Full TypeScript support with blazing-fast HMR."
             />
             <FeatureCard
-              icon={Server01Icon}
+              icon={ServerIcon}
               title="Bun + Hono Backend"
               description="Lightning-fast API server with Hono framework, Drizzle ORM for type-safe database access, and PostgreSQL. Built for performance."
             />
