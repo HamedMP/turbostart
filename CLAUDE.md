@@ -1,8 +1,11 @@
-# Turbo Repo Template
+# turbostart
 
 ## Project Overview
 
-A production-ready monorepo template with Telegram bot, Bun backend, React frontend (TanStack Start), and Remotion video generation. Uses Turborepo for build orchestration and pnpm for package management.
+A production-ready monorepo with modern React frontend (TanStack Start) and blazing-fast Bun backend (Hono). Uses Turborepo for build orchestration and pnpm for package management.
+
+**Live Demo:** https://turbostart.pages.dev
+**GitHub:** https://github.com/HamedMP/turbostart
 
 ## Tech Stack
 
@@ -275,6 +278,54 @@ docker-compose up
 
 # Production
 docker-compose -f docker-compose.prod.yml up -d
+```
+
+## UI Components (shadcn/ui + hugeicons)
+
+### Adding Components
+
+```bash
+cd apps/frontend
+bunx shadcn@latest add button card dialog
+```
+
+Components are installed to `packages/ui` and imported as:
+
+```tsx
+import { Button } from '@workspace/ui/components/button'
+```
+
+### Icon Library: hugeicons
+
+This template uses [hugeicons-react](https://hugeicons.com/) for icons:
+
+```tsx
+import { Rocket01Icon, Github01Icon, FlashIcon } from 'hugeicons-react'
+
+<Rocket01Icon className="w-5 h-5" />
+```
+
+Browse icons at: https://hugeicons.com/icons
+
+### Styling Convention
+
+- **Colors**: Use shadcn CSS variables (`bg-primary`, `text-muted-foreground`)
+- **Spacing**: Tailwind utilities (`p-4`, `gap-2`, `mb-8`)
+- **Components**: Prefer shadcn/ui components over custom implementations
+
+### CSS Variables (from `@theme inline`)
+
+```css
+--color-primary
+--color-primary-foreground
+--color-secondary
+--color-secondary-foreground
+--color-muted
+--color-muted-foreground
+--color-background
+--color-foreground
+--color-border
+--color-card
 ```
 
 ## Key Patterns

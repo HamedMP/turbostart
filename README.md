@@ -1,6 +1,8 @@
-# Turbo Repo Template
+# turbostart
 
-A production-ready monorepo template with Telegram bot, Bun backend, React frontend, and Remotion video generation.
+A production-ready monorepo with modern React frontend (TanStack Start) and blazing-fast Bun backend (Hono).
+
+**Live Demo:** [turbostart.pages.dev](https://turbostart.pages.dev)
 
 ## Features
 
@@ -29,7 +31,7 @@ A production-ready monorepo template with Telegram bot, Bun backend, React front
 
 ```bash
 # Clone the template
-git clone https://github.com/your-username/turbo-repo-template.git my-project
+git clone https://github.com/HamedMP/turbostart.git my-project
 cd my-project
 
 # Install dependencies

@@ -15,6 +15,7 @@ dist/
 build/
 .next/
 .output/
+.wrangler/
 
 # Deployment files
 /*.service
