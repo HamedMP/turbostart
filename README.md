@@ -1,5 +1,7 @@
 # turbostart
 
+![turbostart](apps/frontend/public/og-image.png)
+
 A production-ready monorepo with modern React frontend (TanStack Start) and blazing-fast Bun backend (Hono).
 
 **Live Demo:** [hamedmp-turbostart-apps-frontend.hamed-mp.workers.dev](https://hamedmp-turbostart-apps-frontend.hamed-mp.workers.dev)
