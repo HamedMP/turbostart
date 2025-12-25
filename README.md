@@ -2,7 +2,7 @@
 
 A production-ready monorepo with modern React frontend (TanStack Start) and blazing-fast Bun backend (Hono).
 
-**Live Demo:** [turbostart.pages.dev](https://turbostart.pages.dev)
+**Live Demo:** [hamedmp-turbostart-apps-frontend.hamed-mp.workers.dev](https://hamedmp-turbostart-apps-frontend.hamed-mp.workers.dev)
 
 ## Features
 
