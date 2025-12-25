@@ -1,40 +1,62 @@
-import { useEffect } from 'react'
-import { useLocation } from '@tanstack/react-router'
-import posthog from 'posthog-js'
+import { useEffect, useRef } from 'react'
 import { env } from '@/env'
 
-let posthogInitialized = false
-
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
+  const posthogRef = useRef<typeof import('posthog-js').default | null>(null)
+  const initializedRef = useRef(false)
+  const lastPathRef = useRef<string>('')
 
-  // Initialize PostHog once
+  // Initialize PostHog once (client-side only)
   useEffect(() => {
     if (
-      typeof window !== 'undefined' &&
-      !posthogInitialized &&
-      env.VITE_PUBLIC_POSTHOG_KEY &&
-      env.VITE_PUBLIC_POSTHOG_HOST
+      typeof window === 'undefined' ||
+      initializedRef.current ||
+      !env.VITE_PUBLIC_POSTHOG_KEY ||
+      !env.VITE_PUBLIC_POSTHOG_HOST
     ) {
-      posthog.init(env.VITE_PUBLIC_POSTHOG_KEY, {
+      return
+    }
+
+    // Dynamic import to avoid SSR issues
+    import('posthog-js').then(({ default: posthog }) => {
+      posthog.init(env.VITE_PUBLIC_POSTHOG_KEY!, {
         api_host: env.VITE_PUBLIC_POSTHOG_HOST,
-        capture_pageview: false, // We'll capture manually for SPA
+        capture_pageview: true, // Auto-capture initial pageview
         capture_pageleave: true,
         persistence: 'localStorage',
         autocapture: true,
       })
-      posthogInitialized = true
-    }
+      posthogRef.current = posthog
+      initializedRef.current = true
+      lastPathRef.current = window.location.pathname
+    })
   }, [])
 
-  // Track route changes
+  // Track SPA route changes using popstate and manual checks
   useEffect(() => {
-    if (posthogInitialized) {
-      posthog.capture('$pageview', {
-        $current_url: window.location.href,
-      })
+    if (typeof window === 'undefined') return
+
+    const trackPageview = () => {
+      const currentPath = window.location.pathname
+      if (posthogRef.current && initializedRef.current && currentPath !== lastPathRef.current) {
+        posthogRef.current.capture('$pageview', {
+          $current_url: window.location.href,
+        })
+        lastPathRef.current = currentPath
+      }
     }
-  }, [location.pathname])
+
+    // Listen for browser navigation
+    window.addEventListener('popstate', trackPageview)
+
+    // Check for route changes periodically (for SPA navigation)
+    const interval = setInterval(trackPageview, 500)
+
+    return () => {
+      window.removeEventListener('popstate', trackPageview)
+      clearInterval(interval)
+    }
+  }, [])
 
   return <>{children}</>
 }
