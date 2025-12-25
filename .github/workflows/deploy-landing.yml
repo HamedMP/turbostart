@@ -35,6 +35,9 @@ jobs:
         run: pnpm --filter frontend build:cf
         env:
           NITRO_PRESET: cloudflare_module
+          # PostHog public project API key (safe to expose)
+          VITE_PUBLIC_POSTHOG_KEY: phc_fRX5rvNqsIJhLcWciqCUwLvYFj7YNfZLwUoNBlcMV9w
+          VITE_PUBLIC_POSTHOG_HOST: https://eu.i.posthog.com
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
