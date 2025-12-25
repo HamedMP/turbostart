@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "references": [
+    { "path": "./apps/bot" },
+    { "path": "./apps/backend" },
+    { "path": "./apps/frontend" },
+    { "path": "./apps/video" },
+    { "path": "./packages/shared-types" }
+  ],
+  "files": []
+}

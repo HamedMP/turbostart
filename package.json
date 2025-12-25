@@ -1,0 +1,28 @@
+{
+  "name": "my-turbo-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Full-stack monorepo with Telegram bot, Bun backend, React frontend, and Remotion video",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:ui": "turbo dev --ui tui",
+    "dev:core": "turbo dev --filter=backend --filter=frontend --filter=@workspace/*",
+    "build": "turbo build",
+    "build:core": "turbo build --filter=backend --filter=frontend --filter=@workspace/*",
+    "typecheck": "turbo typecheck",
+    "typecheck:core": "turbo typecheck --filter=backend --filter=frontend --filter=@workspace/*",
+    "typecheck:fast": "tsgo --noEmit",
+    "tsgo": "tsgo",
+    "lint": "turbo lint",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20250615",
+    "turbo": "^2.6.3"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  }
+}

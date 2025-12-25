@@ -1,0 +1,169 @@
+# Production Docker Compose
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+# With tunnel: docker-compose -f docker-compose.prod.yml --profile tunnel up -d
+
+services:
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: ${APP_NAME:-myapp}-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-myapp}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.utf8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-myapp} -d ${POSTGRES_DB:-myapp}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+  # ============================================================================
+  # Backend API (Bun + Hono)
+  # ============================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: ./apps/backend/Dockerfile
+      target: runner
+    container_name: ${APP_NAME:-myapp}-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # video dependency is optional - only needed if using video profile
+      # video:
+      #   condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-myapp}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-myapp}
+      - API_KEY=${API_KEY:?API_KEY is required}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      - POSTHOG_HOST=${POSTHOG_HOST:-https://eu.i.posthog.com}
+      - VIDEO_SERVICE_URL=http://video:3001
+      # Optional integrations
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
+      - FAL_AI_KEY=${FAL_AI_KEY}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME:-myapp-media}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+    networks:
+      - internal
+
+  # ============================================================================
+  # Video Rendering Service (Remotion) - OPTIONAL
+  # Start with: docker-compose -f docker-compose.prod.yml --profile video up -d
+  # ============================================================================
+  video:
+    profiles:
+      - video
+      - full
+    build:
+      context: .
+      dockerfile: ./apps/video/Dockerfile
+      target: runner
+    container_name: ${APP_NAME:-myapp}-video
+    restart: always
+    volumes:
+      - video_output:/app/out
+    networks:
+      - internal
+
+  # ============================================================================
+  # Telegram Bot (Node.js + Grammy) - OPTIONAL
+  # Start with: docker-compose -f docker-compose.prod.yml --profile bot up -d
+  # ============================================================================
+  bot:
+    profiles:
+      - bot
+      - full
+    build:
+      context: .
+      dockerfile: ./apps/bot/Dockerfile
+      target: runner
+    container_name: ${APP_NAME:-myapp}-bot
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:?TELEGRAM_BOT_TOKEN is required}
+      - BACKEND_API_URL=http://backend:4000
+      - BACKEND_API_KEY=${API_KEY:?API_KEY is required}
+    networks:
+      - internal
+
+  # ============================================================================
+  # Frontend (React + Nitro SSR)
+  # ============================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: ./apps/frontend/Dockerfile
+      args:
+        - VITE_BACKEND_URL=
+        - VITE_APP_TITLE=My App
+        - VITE_PUBLIC_POSTHOG_KEY=${VITE_PUBLIC_POSTHOG_KEY}
+        - VITE_PUBLIC_POSTHOG_HOST=${VITE_PUBLIC_POSTHOG_HOST}
+    container_name: ${APP_NAME:-myapp}-frontend
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - BACKEND_INTERNAL_URL=http://backend:4000
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - internal
+
+  # ============================================================================
+  # Cloudflare Tunnel (optional - for custom domains)
+  # Start with: docker-compose -f docker-compose.prod.yml --profile tunnel up -d
+  #
+  # Setup in Cloudflare Zero Trust Dashboard:
+  # 1. Create tunnel: cloudflared tunnel create myapp
+  # 2. Add DNS route: cloudflared tunnel route dns myapp yourdomain.com
+  # 3. Get token from dashboard and add to .env as CLOUDFLARE_TUNNEL_TOKEN
+  # 4. Configure Public Hostname in dashboard:
+  #    - yourdomain.com → http://frontend:3000
+  # ============================================================================
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ${APP_NAME:-myapp}-tunnel
+    restart: always
+    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - internal
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - tunnel
+
+volumes:
+  postgres_data:
+    name: ${APP_NAME:-myapp}_postgres_data
+    driver: local
+  video_output:
+    name: ${APP_NAME:-myapp}_video_output
+    driver: local
+
+networks:
+  internal:
+    name: ${APP_NAME:-myapp}-network
+    driver: bridge

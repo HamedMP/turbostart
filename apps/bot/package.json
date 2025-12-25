@@ -1,0 +1,25 @@
+{
+  "name": "bot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/bot.ts",
+    "start": "node dist/bot.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@grammyjs/commands": "^1.2.0",
+    "@grammyjs/ratelimiter": "^1.2.1",
+    "@t3-oss/env-core": "^0.13.8",
+    "dotenv": "^17.2.3",
+    "grammy": "^1.38.4",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
