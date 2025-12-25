@@ -154,9 +154,30 @@ Components are installed to `packages/ui` and can be imported as:
 import { Button } from '@workspace/ui/components/button';
 ```
 
-## Docker
+## Deployment
 
-### Development
+### Cloudflare Workers (Landing Page)
+
+Deploy the frontend to Cloudflare Workers for a fast, globally distributed landing page:
+
+```bash
+cd apps/frontend
+
+# Build for Cloudflare Workers
+pnpm build:cf
+
+# Preview locally with Wrangler
+pnpm preview:cf
+
+# Deploy to Cloudflare Workers
+pnpm deploy:cf
+```
+
+### Docker (VPS / Full Stack)
+
+For full-stack deployment with backend and database:
+
+**Development:**
 
 ```bash
 # Start all services
@@ -166,7 +187,7 @@ docker-compose up
 docker-compose up --watch
 ```
 
-### Production
+**Production:**
 
 ```bash
 # Build and start production containers

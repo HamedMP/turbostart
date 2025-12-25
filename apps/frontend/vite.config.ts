@@ -6,6 +6,10 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
+// Deployment target: 'bun' (VPS/Docker) or 'cloudflare_module' (Cloudflare Workers)
+const preset = (process.env.NITRO_PRESET || 'bun') as 'bun' | 'cloudflare_module'
+const isCloudflare = preset === 'cloudflare_module'
+
 const config = defineConfig({
   build: {
     rollupOptions: {
@@ -22,7 +26,15 @@ const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
-      preset: 'bun',
+      preset,
+      // Cloudflare Workers configuration
+      ...(isCloudflare && {
+        compatibilityDate: '2024-09-19',
+        cloudflare: {
+          deployConfig: true,
+          nodeCompat: true,
+        },
+      }),
       routeRules: {
         // Static assets with long cache (1 year)
         '/*.webp': {
@@ -31,17 +43,19 @@ const config = defineConfig({
         '/*.png': {
           headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
         },
-        // Proxy /public/* requests to backend
-        '/public/**': {
-          proxy: process.env.BACKEND_INTERNAL_URL
-            ? `${process.env.BACKEND_INTERNAL_URL}/public/**`
-            : 'http://localhost:4000/public/**',
-        },
-        '/health': {
-          proxy: process.env.BACKEND_INTERNAL_URL
-            ? `${process.env.BACKEND_INTERNAL_URL}/health`
-            : 'http://localhost:4000/health',
-        },
+        // Backend proxy (only for VPS deployment with backend)
+        ...(!isCloudflare && {
+          '/public/**': {
+            proxy: process.env.BACKEND_INTERNAL_URL
+              ? `${process.env.BACKEND_INTERNAL_URL}/public/**`
+              : 'http://localhost:4000/public/**',
+          },
+          '/health': {
+            proxy: process.env.BACKEND_INTERNAL_URL
+              ? `${process.env.BACKEND_INTERNAL_URL}/health`
+              : 'http://localhost:4000/health',
+          },
+        }),
       },
     }),
     viteTsConfigPaths({
